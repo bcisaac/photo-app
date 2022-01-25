@@ -1,0 +1,8 @@
+<div class="stories-panel">
+    {% for story in stories %}
+    <section>
+        <img class="profile-pic" alt="{{story.user.username}}'s profile pic" src={{story.user.thumb_url}}>
+        <p>{{story.user.username}}</p>
+    </section>
+    {% endfor %}
+</div>

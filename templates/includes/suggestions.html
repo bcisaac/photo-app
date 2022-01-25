@@ -1,0 +1,21 @@
+<aside class="rec-panel">
+    <header>
+        <img class="profile-pic" alt="your profile pic" src={{user.profile_url}}>
+        <h1>{{ user.username }}</h1>
+    </header>
+    <main>
+        <h2>Suggestions for you</h2>
+        {% for suggestion in suggestions %}
+        <section>
+            <div class="left-group">
+            <img class="profile-pic" alt= "{{suggestion.username}}'s profile pic" src={{suggestion.thumb_url}}>
+            <div class="suggest-text">
+                <h2>{{suggestion.username}}</h2>
+                <h3>suggested for you</h3>
+            </div>
+            </div>
+            <a href="#">follow</a>
+        </section>
+        {% endfor %}
+    </main>
+</aside>
