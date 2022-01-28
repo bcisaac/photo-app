@@ -76,7 +76,7 @@ def generate_posts(n=10, width=800, height=600):
         post = {
             'title': fake.sentence(nb_words=random.randint(10, 40)),
             'image_url': generate_image(width=width, height=height),
-            'likes': random.randint(1, 100),
+            'likes': random.randint(200, 1000),
             'user': generate_user(),
             'time_posted': time_of_post.isoformat(),
             'display_time': format_display_time(time_of_post),

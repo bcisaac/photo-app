@@ -21,7 +21,7 @@
             {% if post.comments|length is greaterthan 1 %}
             <a href="#"> View all {{post.comments|length}} comments</a>
             {% endif %}
-            {% for comment in post.comments %}
+            {% for comment in post.comments[:1] %}
             <p><strong>{{comment.user.username}}</strong> {{comment.text}} </p>
             {% endfor %}
     </article>

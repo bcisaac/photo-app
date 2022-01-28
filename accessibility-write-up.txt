@@ -1,0 +1,17 @@
+Accessibility
+
+I only had to add a language to my html, so people would know what language my page was in. 
+I also received warnings for having suspicious links, but these were all of the more links made 
+to expand captions that were too long. 
+
+To create alt tags for the posts, I just included details like who posted it and when. 
+
+To make user-generated posts truly accessible, all users would need to label their posts or 
+we would need machine learning algorithms to identify alt tags. 
+
+I think my website is useable if I turn off CSS because a person could navigate it through 
+tabs and act image has a tag. However, they would still not be able to discern what images 
+people are positing, which I think defeats the whole purpose of my website. 
+
+For this reason, I think my website is technically useable if I turn off the images, albeit a 
+lot less exciting.
