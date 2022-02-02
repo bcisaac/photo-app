@@ -26,9 +26,24 @@ class PostListEndpoint(Resource):
                 #     return Response(json.dumps({'message': 'limit must be an integer'}), mimetype="application/json", status=404)
                 # else:
         
-        args = request.args
-        print(args)
-        data = Post.query.limit(args.get('limit')).all()
+        limit = request.args.get('limit')
+
+        auth_users_ids = get_authorized_user_ids(self.current_user)
+
+        # query for all the posts that are owned by the user:
+
+        data = Post.query.filter(Post.user_id.in_(auth_users_ids)).all()
+
+        if limit:
+            try:
+                limit = int(limit)
+            except:
+                return Response(json.dumps({'message': 'limit must be an integer'}), mimetype="application/json", status=400)
+            
+            if limit < 1 or limit > 50:
+                return Response(json.dumps({'message': 'limit must be between 1 and 50'}), mimetype="application/json", status=400)
+
+        data = data.order_by(Post.pub_date.desc()).limit(limit)
 
         data = [
             item.to_dict() for item in data
@@ -99,7 +114,7 @@ class PostDetailEndpoint(Resource):
 
         # if the user is not allowed to see the post or if the post does not exist, return 404:
         if not post or not can_view_post(post.id, self.current_user):
-            return Response(json.dumps({'message': 'Post does not exist'}), mimetype="application/json", status=404)
+            return Response(json.dumps({'message': 'Post does not exist or you do not have permission to access this post'}), mimetype="application/json", status=404)
         
         return Response(json.dumps(post.to_dict()), mimetype="application/json", status=200)
 
