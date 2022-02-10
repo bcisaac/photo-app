@@ -1,6 +1,7 @@
+import mimetypes
 from flask import Response, request
 from flask_restful import Resource
-from models import Bookmark, db
+from models import Bookmark, db, Post
 from my_decorators import handle_db_insert_error
 import json
 from . import can_view_post
@@ -12,12 +13,6 @@ class BookmarksListEndpoint(Resource):
     
     def get(self):
         # Your code here
-        '''
-        Goal: show only bookmarks associated with current use
-            1. use sql alchemy
-                to query using the bookmark model
-            2. when we return this list, it's serialized into json
-        '''
         bookmarks = Bookmark.query.filter_by(user_id = self.current_user.id).order_by('id').all()
         print(bookmarks)
 
@@ -30,18 +25,19 @@ class BookmarksListEndpoint(Resource):
 
     @handle_db_insert_error
     def post(self):
-        # Your code here
-        '''
-        Goal: Listen, get post id from request body
-              Check that user is authorized to look at said post
-              Check if post id is valid
-              Insert into database
-              Return new bookmarked post and bookmark id
-        '''
 
-        body = request.get_json()
-        print(body)      
+        body = request.get_json()   
         post_id = body.get("post_id")
+
+        try:
+            post_id = int(post_id)
+        except:
+            return Response(json.dump({'message': 'Invalid post_id format'}, mimetype="application/json", status=400))
+
+        post = Post.query.get(post_id)
+
+        if post == None:
+            return Response(json.dumps({'message': 'This post does not exist'}), mimetype="application/json", status=404)
 
         if not can_view_post(post_id, self.current_user):
             return Response(json.dumps({'message': 'You do not have permission to access this post'}), mimetype="application/json", status=404)
@@ -78,8 +74,39 @@ class BookmarkDetailEndpoint(Resource):
         self.current_user = current_user
     
     def delete(self, id):
-        # Your code here
-        return Response(json.dumps({}), mimetype="application/json", status=200)
+        ''' TODO:
+        Get the request
+        Check if the id is formatted correctly
+        The id is from an actual post and the user is authorized to see that post
+        '''
+
+        try:
+            id = int(id)
+        except:
+            return Response(json.dumps({'message': 'Invalid id format'}), mimetype="application/json", status=400)
+
+        bookmark = Bookmark.query.get(id)
+
+        if not bookmark:
+            return Response(json.dumps({'message': 'Not a bookmark'}), mimetype="application/json", status=404)
+
+        if not can_view_post(bookmark.post_id, self.current_user):
+            return Response(json.dumps({'message': 'You do not have permission to access this post'}), mimetype="application/json", status=404)
+
+        Bookmark.query.filter_by(id=id).delete()
+
+        db.session.commit()
+
+        serialized_data = {
+            'message': 'Bookmark {0} was removed from bookmarks.'.format(id)
+        }
+
+        return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
+
+        serialized_data = {
+            'message': 'Post {0} successfully deleted.'.format(id)
+        }
+        return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
 
 
 

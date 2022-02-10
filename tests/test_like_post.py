@@ -37,7 +37,7 @@ class TestLikePostListEndpoint(unittest.TestCase):
         url = '{0}/api/posts/{1}/likes'.format(root_url, liked_post.get('post_id'))
         response = requests.post(url, json={})
         # print(liked_post.get('post_id'))
-        # print(response.text)
+        print(response.text)
         self.assertEqual(response.status_code, 400)
 
     def test_like_post_invalid_post_id_format_400(self):
@@ -88,6 +88,7 @@ class TestLikePostDetailEndpoint(unittest.TestCase):
             'sdfsdfdsf'
         )
         response = requests.delete(url)
+        # print(response.text)
         self.assertEqual(response.status_code, 400)
         
     
@@ -128,7 +129,7 @@ if __name__ == '__main__':
         TestLikePostListEndpoint('test_like_post_invalid_post_id_404'),
         TestLikePostListEndpoint('test_like_post_unauthorized_post_id_404'),
 
-        # # DELETE Tests:
+        # DELETE Tests:
         TestLikePostDetailEndpoint('test_like_post_delete_valid_200'),
         TestLikePostDetailEndpoint('test_like_post_delete_invalid_id_format_400'),
         TestLikePostDetailEndpoint('test_like_post_delete_invalid_id_404'),

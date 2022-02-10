@@ -81,7 +81,7 @@ class TestBookmarkListEndpoint(unittest.TestCase):
             'post_id': 999999,
             'text': 'Some comment text'
         }
-        response = requests.post(root_url + '/api/comments', json=body)
+        response = requests.post(root_url + '/api/bookmarks', json=body)
         # print(response.text)
         self.assertEqual(response.status_code, 404)
 
@@ -152,15 +152,15 @@ if __name__ == '__main__':
         TestBookmarkListEndpoint('test_bookmark_post_valid_request_201'),
         TestBookmarkListEndpoint('test_bookmark_post_no_duplicates_400'),
         TestBookmarkListEndpoint('test_bookmark_post_invalid_post_id_format_400'),
-        # TestBookmarkListEndpoint('test_bookmark_post_invalid_post_id_404'),
+        TestBookmarkListEndpoint('test_bookmark_post_invalid_post_id_404'),
         TestBookmarkListEndpoint('test_bookmark_post_unauthorized_post_id_404'),
-        # TestBookmarkListEndpoint('test_bookmark_post_missing_post_id_400'),  
+        TestBookmarkListEndpoint('test_bookmark_post_missing_post_id_400'),  
 
         # # DELETE Tests
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_valid_200'),
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_format_400'),
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_404'),
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_unauthorized_id_404'),    
+        TestBookmarkDetailEndpoint('test_bookmark_delete_valid_200'),
+        TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_format_400'),
+        TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_404'),
+        TestBookmarkDetailEndpoint('test_bookmark_delete_unauthorized_id_404'),    
     ])
 
     unittest.TextTestRunner(verbosity=2).run(suite)
