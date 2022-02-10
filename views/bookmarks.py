@@ -14,7 +14,6 @@ class BookmarksListEndpoint(Resource):
     def get(self):
         # Your code here
         bookmarks = Bookmark.query.filter_by(user_id = self.current_user.id).order_by('id').all()
-        print(bookmarks)
 
         # convert list of Bookmark model into list of dictionaries
         bookmarks = [

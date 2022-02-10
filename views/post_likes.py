@@ -30,7 +30,6 @@ class PostLikesListEndpoint(Resource):
         if isLiked:
             return Response(json.dumps({'message': 'Post {} is already liked'.format(isLiked.id)}), mimetype="application/json", status=400)
 
-        print('made it')
         like = LikePost(self.current_user.id, post_id)
         db.session.add(like)
         db.session.commit()

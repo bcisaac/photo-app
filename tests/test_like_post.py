@@ -37,7 +37,7 @@ class TestLikePostListEndpoint(unittest.TestCase):
         url = '{0}/api/posts/{1}/likes'.format(root_url, liked_post.get('post_id'))
         response = requests.post(url, json={})
         # print(liked_post.get('post_id'))
-        print(response.text)
+        # print(response.text)
         self.assertEqual(response.status_code, 400)
 
     def test_like_post_invalid_post_id_format_400(self):

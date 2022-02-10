@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import mimetypes
 from flask import Response, request
 from flask_restful import Resource
 from models import Post, User, db
@@ -28,22 +29,22 @@ class PostListEndpoint(Resource):
         
         limit = request.args.get('limit')
 
-        auth_users_ids = get_authorized_user_ids(self.current_user)
-
-        # query for all the posts that are owned by the user:
-
-        data = Post.query.filter(Post.user_id.in_(auth_users_ids)).all()
-
         if limit:
             try:
                 limit = int(limit)
             except:
-                return Response(json.dumps({'message': 'limit must be an integer'}), mimetype="application/json", status=400)
+                return Response(json.dumps({'message': 'Limit must be an integer'}), mimetype="application/json", status=400)
             
             if limit < 1 or limit > 50:
-                return Response(json.dumps({'message': 'limit must be between 1 and 50'}), mimetype="application/json", status=400)
+                return Response(json.dumps({'message': 'Limit must be between 1 and 50'}), mimetype="application/json", status=400)
+        else:
+            limit = 20
 
-        data = data.order_by(Post.pub_date.desc()).limit(limit)
+        auth_users_ids = get_authorized_user_ids(self.current_user)
+
+        # query for all the posts that are owned by the user:
+
+        data = Post.query.filter(Post.user_id.in_(auth_users_ids)).order_by(Post.pub_date.desc()).limit(limit).all()
 
         data = [
             item.to_dict() for item in data
@@ -54,11 +55,12 @@ class PostListEndpoint(Resource):
         # else:
         return Response(json.dumps(data), mimetype="application/json", status=200)
 
-
-
-
     def post(self):
         body = request.get_json()
+
+        if not body:
+            return Response(json.dumps({'message': 'Bad post data'}), mimetype='application/json', status=400)
+
         image_url = body.get('image_url')
         caption = body.get('caption')
         alt_text = body.get('alt_text')
@@ -76,6 +78,12 @@ class PostDetailEndpoint(Resource):
         self.current_user = current_user
         
     def patch(self, id):
+
+        try:
+            id = int(id)
+        except:
+            return Response(json.dumps({'message': 'Invalid post id, must be an integer'}), mimetype="application/json", status=400)
+
         post = Post.query.get(id)
 
         # a user can only edit their own post:
@@ -84,7 +92,6 @@ class PostDetailEndpoint(Resource):
         if post.user_id != self.current_user.id:
             return Response(json.dumps({'message': 'No access ' + str(self.current_user.id)}), mimetype="application/json", status=404)
        
-
         body = request.get_json()
         post.image_url = body.get('image_url') or post.image_url
         post.caption = body.get('caption') or post.caption
@@ -96,10 +103,14 @@ class PostDetailEndpoint(Resource):
     
     def delete(self, id):
 
-        # a user can only delete their own post:
+        try:
+            id = int(id)
+        except:
+            return Response(json.dumps({'message': 'Invalid post id, must be an integer'}), mimetype="application/json", status=400)
+        
         post = Post.query.get(id)
         if not post or post.user_id != self.current_user.id:
-            return Response(json.dumps({'message': 'Post does not exist'}), mimetype="application/json", status=404)
+            return Response(json.dumps({'message': 'Post does not exist or user can not have permissions to delete post'}), mimetype="application/json", status=404)
        
 
         Post.query.filter_by(id=id).delete()
@@ -110,11 +121,16 @@ class PostDetailEndpoint(Resource):
         return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
 
     def get(self, id):
+        
+        try:
+            id = int(id)
+        except:
+            return Response(json.dumps({'message': 'Invalid post id, must be an integer'}), mimetype="application/json", status=400)
+        
         post = Post.query.get(id)
 
-        # if the user is not allowed to see the post or if the post does not exist, return 404:
         if not post or not can_view_post(post.id, self.current_user):
-            return Response(json.dumps({'message': 'Post does not exist or you do not have permission to access this post'}), mimetype="application/json", status=404)
+            return Response(json.dumps({'message': 'Post does not exist or user can not access post'}), mimetype="application/json", status=404)
         
         return Response(json.dumps(post.to_dict()), mimetype="application/json", status=200)
 
