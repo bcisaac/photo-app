@@ -7,7 +7,7 @@ from flask_restful import Api
 import os
 from models import db, User
 from views import bookmarks, comments, followers, following, \
-    posts, profile, stories, suggestions, post_likes
+                posts, profile, stories, suggestions, post_likes
 
 app = Flask(__name__)
 
