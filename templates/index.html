@@ -1,21 +1,33 @@
 <head>
     <title>Photo App</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
-    <link rel="stylesheet" href="/static/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="/static/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <html lang="en">
+    <!-- client-side scripts -->
+    <script lang="text/javascript" src="/static/js/hw04.js" defer></script>
 </head>
 <body>
     {% include 'includes/navbar.html' %}
     <main>
         <div class="left">
-            {% include 'includes/stories.html' %}
-            {% include 'includes/cards.html' %}
+            <header class="stories">
+                <!-- Stories rendered client-side (done for you)-->
+            </header>
+
+            <div class="posts">
+                <!-- Posts rendered client-side -->
+                <p>TBD</p>
+            </div>
+
         </div>
+        <aside class="rec-panel">
+
+        </aside>
     </main>
-    {% include 'includes/suggestions.html' %}
+    
+    
 </body>

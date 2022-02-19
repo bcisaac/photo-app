@@ -14,8 +14,31 @@
                 <h3>suggested for you</h3>
             </div>
             </div>
-            <a href="#">follow</a>
+            <button>follow</button>
         </section>
         {% endfor %}
     </main>
+</aside>
+
+<aside class = "rec-panel">
+    <header>
+        <img class="profile-pic" alt="your profile pic" src="${user.profile_url">
+        <h1>${user.usernamde}</h1>
+    </header>
+    <main>
+        <h2>Suggestions for you</h2>
+        <section id="suggestions">
+            <div class="suggestion">
+                <img class="profile-pic" alt= "${suggestion.username}'s profile pic" src=${suggestion.thumb_url}>
+                <div>
+                    <p class="username">Richard</p>
+                    <p class="suggestion-text">suggested for you</p>
+                </div>
+                <div>
+                    <button>follow</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
 </aside>

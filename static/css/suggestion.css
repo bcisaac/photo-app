@@ -1,0 +1,28 @@
+#suggestions {
+    width: 350px;
+    background-color: #f2f2f2;
+    padding: 5px;
+}
+
+.suggestion {
+    display: grid;
+    grid-template-columns: 80px auto 75px;
+    align-items: center;
+}
+
+.suggestion p {
+    margin: 0;
+}
+
+.suggestion img {
+    border-radius: 15px;
+}
+
+.suggestion .username {
+    font-weight:bold;
+}
+
+.suggestion .suggestion-text {
+    font-size: .9em;
+    color: #555;
+}
