@@ -42,7 +42,7 @@ const post2Html = post => {
             <img class="post-image" alt="${post.user.username}'s post from ${post.display_time}" src=${post.image_url}>
             <div>
                 <div class="left-group">
-                    <button onclick="likeunlike(event)">
+                    <button class="like" onclick="likeunlike(event)">
                         <i class="fa${!post.current_user_like_id ? 'r' : 's'} fa-heart"></i>
                     </button>
                         <i class="far fa-comment"></i>
@@ -63,29 +63,58 @@ const post2Html = post => {
             <div>
                 <div class="left-group">
                     <i class="far fa-smile"></i>
-                    <h3>Add a comment...</h3>
+                    <div class=input-holder>
+                        <input type="text" aria-label="Add a comment" placeholder="Add a comment...">
+                    </div>
                 </div>
-                <a href="#"><h4>Post</h4></a>
+                <button class="post-comment">Post</button>
             </div>
         </section>
         `;
 };
 
 const comments2Html = (comments, post) => {
-    if(comments.length==1) {
-        return `
-            <p><strong>${comments[0].user.username}</strong> ${comments[0].text} </p>
-    `
+
+    let html = ``
+    
+    if (comments && comments.length>1) {
+        const lastComment = comments[comments.length - 1]
+        html += `
+            <button class="view-comments" onclick="showPostDetail(event)" data-post-id="${post.id}"> View all ${post.comments.length} comments</button>
+            <p><strong>${lastComment.user.username}</strong> ${lastComment.text} <span class="comment-timestamp">${lastComment.display_time} </span></p>
+        `
+        
     }
-    else if (comments.length==0) {
-        return ``
-    }
-    else {
-        return `
-            <a href="#"> View all ${post.comments.length} comments</a>
-            <p><strong>${comments[0].user.username}</strong> ${comments[0].text} </p>
+
+    else if (comments && comments.length==1) {
+        html+= `
+            <p><strong>${comments[0].user.username}</strong> ${comments[0].text}</p>
         `
     }
+
+    return html
+}
+
+destroyModal = ev => {
+    document.querySelector('#modal-container').innerHTML = "";
+}
+
+const showPostDetail = ev => {
+    const postId = ev.currentTarget.dataset.postId;
+    fetch(`/api/posts/${postId}`)
+        .then(response => response.json())
+        .then(post => {
+            const html = `
+            <div class="modal-bg">
+                <button onclick="destroyModal(event)">Close</button>
+                <div class="modal">
+                    <img src="${post.image_url}">
+                </div>
+            </div>
+            `
+            document.querySelector('#modal-container').innerHTML = html;
+        })
+    
 }
 
 const suggestionHeader = () => {
@@ -190,7 +219,6 @@ const displaySuggestions = () => {
     fetch('/api/suggestions/')
     .then(response => response.json())
     .then(users => {
-        console.log(users)
         const html = users.map(user2html).join('\n');
         document.querySelector('.rec-panel').innerHTML = html;
     })
