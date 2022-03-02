@@ -1,77 +1,222 @@
-const story2Html = story => {
-    // return `
-    //     <section>
-    //         <img class="profile-pic" alt="${story.user.username}'s profile pic" src=${story.user.thumb_url}>
-    //         <p>${story.user.username}</p>
-    //     </section>
-    // `
-        return `
-        <div>
-            <img src="${ story.user.thumb_url }" class="pic" alt="profile pic for ${ story.user.username }" />
-            <p>${ story.user.username }</p>
-        </div>
-        `
-    ;
-};
-
-// fetch data from your API endpoint:
-const displayStories = () => {
-    fetch('/api/stories')
-        .then(response => response.json())
-        .then(stories => {
-            const html = stories.map(story2Html).join('\n');
-            document.querySelector('.stories').innerHTML = html;
-        })
-};
-
-const likeunlike = ev => {
-    console.log('button-clicked')
-}
-
 // Get post data from api endpoint (/api/posts?limit=10)
 // when that data arrives build a bunch of html cards
 // update the container with the HTML
 
 const post2Html = post => {
     return `
-        <section class="card">
+        <section class="card" id=${post.id}>
             <div>
-                <h1>${post.user.username} - ${post.current_user_like_id} - ${post.current_user_bookmark_id} </h1>
+                <h1>${post.user.username}</h1>
                 <i class="fas fa-ellipsis-h"></i>
             </div>
             <img class="post-image" alt="${post.user.username}'s post from ${post.display_time}" src=${post.image_url}>
             <div>
                 <div class="left-group">
-                    <button class="like" onclick="likeunlike(event)">
+                    <button class="like" 
+                    data-post-id="${post.id}"
+                    data-user-like-id="${post.current_user_like_id}" 
+                    aria-label="Like"
+                    aria-checked="${!post.current_user_like_id ? 'false' : 'true'}"
+                    onclick="toggleLike(event)">
                         <i class="fa${!post.current_user_like_id ? 'r' : 's'} fa-heart"></i>
                     </button>
+                    <button class="comment"
+                    onclick="showPostDetail(event)"
+                    data-post-id="${post.id}">
                         <i class="far fa-comment"></i>
+                    </button>
                     <i class="far fa-paper-plane"></i>
                 </div>
-                <i class="fa${!post.current_user_bookmark_id ? 'r' : 's'} fa-bookmark"></i>
+                <button class="bookmark" 
+                    data-post-id="${post.id}"
+                    data-user-bookmark-id="${post.current_user_bookmark_id}" 
+                    aria-label="Bookmark"
+                    aria-checked="${!post.current_user_bookmark_id ? 'false' : 'true'}"
+                    onclick="toggleBookmark(event)">
+                        <i class="fa${!post.current_user_bookmark_id ? 'r' : 's'} fa-bookmark"></i>
+                    </button>
+                
             </div>
             <div class="likes">
                 <h2>${post.likes.length} like${post.likes.length!=1 ? 's' : ''}</h2>
             </div>
-            <article class="comments">
-                <p><strong>${post.user.username}</strong> ${post.caption} <a href="#">more</a></p> 
+            <p class="caption"><strong>${post.user.username}</strong> ${post.caption} </p>
+            <article class="comments" id="post-${post.id}-comments">
                 ${
                     comments2Html(post.comments, post)
                 }
             </article>
             <p class="timestamp">${ post.display_time }</p>
             <div>
-                <div class="left-group">
-                    <i class="far fa-smile"></i>
+                <div class="post-comment">
                     <div class=input-holder>
-                        <input type="text" aria-label="Add a comment" placeholder="Add a comment...">
+                        <input class="comment-input" type="text" aria-label="Add a comment" placeholder="Add a comment...">
                     </div>
+                    <button data-post-id="${post.id}" onclick="addComment(event)" class="post-button">Post</button>
                 </div>
-                <button class="post-comment">Post</button>
+                
             </div>
         </section>
         `;
 };
+
+const toggleLike = (ev) => {
+    console.log('button-clicked')
+    const elem = ev.currentTarget
+    if (elem.getAttribute('aria-checked') === 'false') {
+        // issue post request
+        likePost(elem.dataset.postId, elem)
+
+        
+    } else {
+        // issue delete request
+        unLikePost(elem.dataset.postId, elem.dataset.userLikeId, elem)
+    }
+}
+
+const likePost = (postId, elem) => {
+    fetch(`/api/posts/${postId}/likes/`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            elem.innerHTML = `<i class="fas fa-heart"></i>`
+            elem.setAttribute('aria-checked', 'true')
+            elem.setAttribute('data-user-like-id', data.id)
+        });
+}
+
+const unLikePost = (postId, userLikeId, elem) => {
+    const deleteURL = `/api/posts/${postId}/likes/${userLikeId}`
+
+    fetch(deleteURL, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        elem.innerHTML = `<i class="far fa-heart"></i>`
+        elem.setAttribute('aria-checked', 'false')
+        elem.setAttribute('data-user-like-id', undefined)
+    });
+}
+
+const toggleBookmark = (ev) => {
+    console.log('button-clicked')
+    const elem = ev.currentTarget
+    if (elem.getAttribute('aria-checked') === 'false') {
+        // issue post request
+        bookmarkPost(elem.dataset.postId, elem)
+
+        
+    } else {
+        // issue delete request
+        unBookmarkPost(elem.dataset.userBookmarkId, elem)
+    }
+}
+
+const bookmarkPost = (postId, elem) => {
+    const postData = {
+        "post_id": postId
+    };
+    fetch(`/api/bookmarks/`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            elem.innerHTML = `<i class="fas fa-bookmark"></i>`
+            elem.setAttribute('aria-checked', 'true')
+            elem.setAttribute('data-user-bookmark-id', data.id)
+        });
+}
+
+const unBookmarkPost = (bookmarkId, elem) => {
+    const deleteURL = `/api/bookmarks/${bookmarkId}`
+
+    fetch(deleteURL, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        elem.innerHTML = `<i class="far fa-bookmark"></i>`
+        elem.setAttribute('aria-checked', 'false')
+        elem.setAttribute('data-user-bookmark-id', undefined)
+    });
+
+}
+
+const addComment = (ev) => {
+    const elem = ev.currentTarget
+    inputElement = elem.previousElementSibling.querySelector('input')
+    const comment = inputElement.value;
+    const postId = elem.dataset.postId
+    console.log(postId)
+    
+
+    // make a API call
+    const postData = {
+        "post_id": postId,
+        "text": comment
+    }
+    fetch(`api/comments/`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData)
+    })
+    .then(response => response.json())
+    .then(comment => {
+        console.log(comment);
+    })
+    
+    displayPosts()
+
+}
+
+const redrawComments = (postId) => {
+    // fetch(`http://127.0.0.1:5000/api/posts/${postId}`, {
+    //     method: "GET",
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     }
+    // })
+    // .then(response => response.json())
+    // .then(data => {
+    //     console.log(data)
+    //     console.log(document.querySelector(`#post-${data.id}-comments`))
+    //     document.querySelector(`#post-${data.id}-comments`).innerHTML = comments2Html(data.comments, data)
+    // })
+
+    fetch("http://127.0.0.1:5000/api/posts/108", {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+    });
+
+}
+
 
 const comments2Html = (comments, post) => {
 
@@ -88,31 +233,53 @@ const comments2Html = (comments, post) => {
 
     else if (comments && comments.length==1) {
         html+= `
-            <p><strong>${comments[0].user.username}</strong> ${comments[0].text}</p>
+        <p><strong>${comments[0].user.username}</strong> ${comments[0].text} <span class="comment-timestamp">${comments[0].display_time} </span></p>
         `
     }
 
     return html
 }
 
-destroyModal = ev => {
+const comment2Html = comment => {
+
+    return `
+    <p><strong>${comment.user.username}</strong> ${comment.text} <span class="comment-timestamp">${comment.display_time} </span></p>
+    `
+}
+
+destroyModal = (ev) => {
+    let returnLoc = ev.currentTarget.dataset.return
+    console.log(returnLoc)
     document.querySelector('#modal-container').innerHTML = "";
+    document.querySelector(`#${returnLoc} > button`).focus();
+    
 }
 
 const showPostDetail = ev => {
     const postId = ev.currentTarget.dataset.postId;
+    let returnLoc = `post-${postId}-comments`
     fetch(`/api/posts/${postId}`)
         .then(response => response.json())
         .then(post => {
             const html = `
             <div class="modal-bg">
-                <button onclick="destroyModal(event)">Close</button>
+                <button id="close-modal" data-return=${returnLoc} onclick="destroyModal(event)">Close</button>
                 <div class="modal">
-                    <img src="${post.image_url}">
+                    <div class="modal-img-container" style="background-image:url(${post.image_url})">
+                    </div>
+                    <div class = "modal-comments">
+                        <article class="comments">
+                            <p><strong>${post.user.username}</strong> ${post.caption} </p> 
+                            ${
+                                post.comments.map(comment2Html).join("")
+                            }
+                        </article>
+                    </div>
                 </div>
             </div>
             `
             document.querySelector('#modal-container').innerHTML = html;
+            document.querySelector('#close-modal').focus()
         })
     
 }
@@ -126,11 +293,44 @@ const suggestionHeader = () => {
     `
 }
 
+const story2Html = story => {
+    // return `
+    //     <section>
+    //         <img class="profile-pic" alt="${story.user.username}'s profile pic" src=${story.user.thumb_url}>
+    //         <p>${story.user.username}</p>
+    //     </section>
+    // `
+        return `
+        <div>
+            <img src="${ story.user.thumb_url }" class="pic" alt="profile pic for ${ story.user.username }" />
+            <p>${ story.user.username }</p>
+        </div>
+        `
+    ;
+};
+
+const user2html = user => {
+    return `
+        <section>
+            <img class="profile-pic" alt= "${user.username}'s profile pic" src=${user.thumb_url}>
+            <div class="suggest-text">
+                <h2>${user.username}</h2>
+                <h3>suggested for you</h3>
+            </div>
+            <div>
+                <button class=follow 
+                aria-label="Follow"
+                aria-checked="false"
+                data-user-id="${user.id}" 
+                onclick="toggleFollow(event);">follow</button>
+            </div>
+        </section>
+            `
+}
+
 const toggleFollow = (ev) => {
     console.log(ev)
     const elem = ev.currentTarget
-    console.log(elem.dataset.userId)
-    console.log(elem.innerHTML)
     if (elem.getAttribute('aria-checked') === 'false') {
         // issue post request
         followUser(elem.dataset.userId, elem)
@@ -186,25 +386,6 @@ const unfollowUser = (followingId, elem) => {
 
 }
 
-const user2html = user => {
-    return `
-        <section>
-            <img class="profile-pic" alt= "${user.username}'s profile pic" src=${user.thumb_url}>
-            <div class="suggest-text">
-                <h2>${user.username}</h2>
-                <h3>suggested for you</h3>
-            </div>
-            <div>
-                <button class=follow 
-                aria-label="Follow"
-                aria-checked="false"
-                data-user-id="${user.id}" 
-                onclick="toggleFollow(event);">follow</button>
-            </div>
-        </section>
-            `
-}
-
 // fetch data from your API endpoint:
 const displayPosts = () => {
     fetch('/api/posts/?limit=10')
@@ -223,6 +404,16 @@ const displaySuggestions = () => {
         document.querySelector('.rec-panel').innerHTML = html;
     })
 }
+
+// fetch data from your API endpoint:
+const displayStories = () => {
+    fetch('/api/stories')
+        .then(response => response.json())
+        .then(stories => {
+            const html = stories.map(story2Html).join('\n');
+            document.querySelector('.stories').innerHTML = html;
+        })
+};
 
 
 

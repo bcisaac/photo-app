@@ -1,16 +1,23 @@
 from dotenv import load_dotenv
 load_dotenv()
 from flask import Flask, request
+# import flask_jwt_extended
 from flask_restful import Api
 from flask_cors import CORS
 from flask import render_template
 import os
 from models import db, User, ApiNavigator
 from views import bookmarks, comments, followers, following, posts, profile, stories, suggestions, post_likes
- 
+
+#initialize the JWT extended library
 
 
 app = Flask(__name__)
+
+# app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET')  # Change this "super secret" with something else!
+# app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "json", "query_string"]
+# app.config["JWT_COOKIE_SECURE"] = False
+# jwt = flask_jwt_extended.JWTManager(app)
 
 # CORS: allows anyone from anywhere to use your API:
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
@@ -56,6 +63,25 @@ def api_docs():
         endpoints=navigator.get_endpoints(),
         url_root=request.url_root[0:-1] # trim trailing slash
     )
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        print(request.form)
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        # check database
+        user = User.query.filter_by(username=username).all()
+        if user:
+            print(user)
+            print('Set token')
+        else:
+            print('invalid')
+
+        print("Handle authentication and token setting")
+
+    return render_template('login.html')
 
 
 
