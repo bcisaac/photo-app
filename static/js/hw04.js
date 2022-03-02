@@ -15,6 +15,7 @@ const post2Html = post => {
                     <button class="like" 
                     data-post-id="${post.id}"
                     data-user-like-id="${post.current_user_like_id}" 
+                    data-likes="${post.likes.length}"
                     aria-label="Like"
                     aria-checked="${!post.current_user_like_id ? 'false' : 'true'}"
                     onclick="toggleLike(event)">
@@ -63,15 +64,26 @@ const post2Html = post => {
 const toggleLike = (ev) => {
     console.log('button-clicked')
     const elem = ev.currentTarget
+    console.log(elem.dataset.likes)
     if (elem.getAttribute('aria-checked') === 'false') {
         // issue post request
+        // document.querySelector(`.likes`).innerHTML = `<h2>${Number(elem.dataset.likes) + 1} like${elem.dataset.likes!=1 ? 's' : ''}</h2>`
+        
         likePost(elem.dataset.postId, elem)
+        
+        
 
         
     } else {
         // issue delete request
+        // document.querySelector(`.likes`).innerHTML = `<h2>${Number(elem.dataset.likes)-1} like${elem.dataset.likes!=1 ? 's' : ''}</h2>`
         unLikePost(elem.dataset.postId, elem.dataset.userLikeId, elem)
+        
     }
+
+    displayPosts()
+
+    
 }
 
 const likePost = (postId, elem) => {
