@@ -15,7 +15,6 @@ const post2Html = post => {
                     <button class="like" 
                     data-post-id="${post.id}"
                     data-user-like-id="${post.current_user_like_id}" 
-                    data-likes="${post.likes.length}"
                     aria-label="Like"
                     aria-checked="${!post.current_user_like_id ? 'false' : 'true'}"
                     onclick="toggleLike(event)">
@@ -38,7 +37,7 @@ const post2Html = post => {
                     </button>
                 
             </div>
-            <div class="likes">
+            <div id="${post.id}-likes">
                 <h2>${post.likes.length} like${post.likes.length!=1 ? 's' : ''}</h2>
             </div>
             <p class="caption"><strong>${post.user.username}</strong> ${post.caption} </p>
@@ -64,26 +63,29 @@ const post2Html = post => {
 const toggleLike = (ev) => {
     console.log('button-clicked')
     const elem = ev.currentTarget
-    console.log(elem.dataset.likes)
     if (elem.getAttribute('aria-checked') === 'false') {
         // issue post request
-        // document.querySelector(`.likes`).innerHTML = `<h2>${Number(elem.dataset.likes) + 1} like${elem.dataset.likes!=1 ? 's' : ''}</h2>`
-        
         likePost(elem.dataset.postId, elem)
-        
-        
-
         
     } else {
         // issue delete request
-        // document.querySelector(`.likes`).innerHTML = `<h2>${Number(elem.dataset.likes)-1} like${elem.dataset.likes!=1 ? 's' : ''}</h2>`
         unLikePost(elem.dataset.postId, elem.dataset.userLikeId, elem)
         
     }
-
-    displayPosts()
+    redrawLikes(elem.dataset.postId)
 
     
+}
+
+const redrawLikes = postId => {
+    fetch(`/api/posts/${postId}`, {
+            method: "GET",
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(document.querySelector(`#${data.id}-likes`))
+            document.querySelector(`#${data.id}.likes`).innerHTML = `<h2>${data.likes.length} like${data.likes.length!=1 ? 's' : ''}</h2>`
+        })  
 }
 
 const likePost = (postId, elem) => {
@@ -179,7 +181,6 @@ const addComment = (ev) => {
     const comment = inputElement.value;
     const postId = elem.dataset.postId
     console.log(postId)
-    
 
     // make a API call
     const postData = {
@@ -198,12 +199,23 @@ const addComment = (ev) => {
         console.log(comment);
     })
     
-    displayPosts()
+    redrawComments(postId)
 
 }
 
 const redrawComments = (postId) => {
-    // fetch(`http://127.0.0.1:5000/api/posts/${postId}`, {
+    fetch(`http://127.0.0.1:5000/api/posts/${postId}`, {
+        method: "GET",
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+        console.log(document.querySelector(`#post-${data.id}-comments`))
+        document.querySelector(`#post-${data.id}-comments`).innerHTML = comments2Html(data.comments, data)
+        console.log(data.comments.length)
+    })
+
+    // fetch("http://127.0.0.1:5000/api/posts/108", {
     //     method: "GET",
     //     headers: {
     //         'Content-Type': 'application/json',
@@ -211,21 +223,8 @@ const redrawComments = (postId) => {
     // })
     // .then(response => response.json())
     // .then(data => {
-    //     console.log(data)
-    //     console.log(document.querySelector(`#post-${data.id}-comments`))
-    //     document.querySelector(`#post-${data.id}-comments`).innerHTML = comments2Html(data.comments, data)
-    // })
-
-    fetch("http://127.0.0.1:5000/api/posts/108", {
-        method: "GET",
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data);
-    });
+    //     console.log(data);
+    // });
 
 }
 
