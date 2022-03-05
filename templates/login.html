@@ -1,14 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Login Screen</title>
+    <title>Photo App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
     <style>
-        body * {
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-        }
         form {
             display: flex;
             flex-direction: column;
@@ -51,19 +47,14 @@
     </style>
 </head>
 <body>
+    <!-- Nav Bar still rendered via server-side template -->
+    {% include 'includes/navbar.html'  %}
     <form method="POST" action="/login">
         {% if message %}
             <div class="error">{{ message }}</div>
         {% endif %}
-        <div>
-            <label for="username">Username</label>
-            <input name="username" type="text" value="" id="username" placeholder="username"> 
-        </div>
-        <div>
-            <label for="password">Password</label>  
-            <input name="password" type="password" value="" id="password" placeholder="password"><br>
-        </div>
-        <button type="submit">Login</button>
+        
+        YOUR FORM HERE
     </form> 
 </body>
 </html>

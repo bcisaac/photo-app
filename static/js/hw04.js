@@ -37,7 +37,7 @@ const post2Html = post => {
                     </button>
                 
             </div>
-            <div id="${post.id}-likes">
+            <div id="likes-${post.id}">
                 <h2>${post.likes.length} like${post.likes.length!=1 ? 's' : ''}</h2>
             </div>
             <p class="caption"><strong>${post.user.username}</strong> ${post.caption} </p>
@@ -83,8 +83,8 @@ const redrawLikes = postId => {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(document.querySelector(`#${data.id}-likes`))
-            document.querySelector(`#${data.id}.likes`).innerHTML = `<h2>${data.likes.length} like${data.likes.length!=1 ? 's' : ''}</h2>`
+            console.log(document.querySelector(`#likes-${data.id}`))
+            document.querySelector(`#likes-${data.id}`).innerHTML = `<h2>${data.likes.length} like${data.likes.length!=1 ? 's' : ''}</h2>`
         })  
 }
 
