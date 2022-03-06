@@ -121,7 +121,7 @@ class TestBookmarkDetailEndpoint(unittest.TestCase):
         url = '{0}/api/bookmarks/{1}'.format(root_url, bookmark_id)
         
         response = utils.issue_delete_request(url, user_id=self.current_user.get('id'))
-        print(response.text)
+        # print(response.text)
         self.assertEqual(response.status_code, 200)
 
         # restore the post in the database:

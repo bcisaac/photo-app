@@ -5,12 +5,16 @@ from models import Bookmark, db, Post
 from my_decorators import handle_db_insert_error
 import json
 from . import can_view_post
+import flask_jwt_extended
+from views import security, get_authorized_user_ids
+from sqlalchemy import and_
 
 class BookmarksListEndpoint(Resource):
 
     def __init__(self, current_user):
         self.current_user = current_user
     
+    @flask_jwt_extended.jwt_required()
     def get(self):
         # Your code here
         bookmarks = Bookmark.query.filter_by(user_id = self.current_user.id).order_by('id').all()
@@ -22,6 +26,7 @@ class BookmarksListEndpoint(Resource):
 
         return Response(json.dumps(bookmarks), mimetype="application/json", status=200)
 
+    @flask_jwt_extended.jwt_required()
     @handle_db_insert_error
     def post(self):
 
@@ -40,6 +45,11 @@ class BookmarksListEndpoint(Resource):
 
         if not can_view_post(post_id, self.current_user):
             return Response(json.dumps({'message': 'You do not have permission to access this post'}), mimetype="application/json", status=404)
+
+        isBookmarked = Bookmark.query.filter(and_(Bookmark.user_id == self.current_user.id, Bookmark.post_id == post_id)).first()
+
+        if isBookmarked:
+            return Response(json.dumps({'message': 'Post {} is already liked'.format(isBookmarked.id)}), mimetype="application/json", status=400)
 
         # to create a bookmark requires user id and postr_id
         bookmark = Bookmark(self.current_user.id, post_id)
@@ -72,6 +82,8 @@ class BookmarkDetailEndpoint(Resource):
     def __init__(self, current_user):
         self.current_user = current_user
     
+    @flask_jwt_extended.jwt_required()
+    # @security.user_can_view_post
     def delete(self, id):
         ''' TODO:
         Get the request
@@ -102,24 +114,18 @@ class BookmarkDetailEndpoint(Resource):
 
         return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
 
-        serialized_data = {
-            'message': 'Post {0} successfully deleted.'.format(id)
-        }
-        return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
-
-
 
 def initialize_routes(api):
     api.add_resource(
         BookmarksListEndpoint, 
         '/api/bookmarks', 
         '/api/bookmarks/', 
-        resource_class_kwargs={'current_user': api.app.current_user}
+        resource_class_kwargs={'current_user': flask_jwt_extended.current_user}
     )
 
     api.add_resource(
         BookmarkDetailEndpoint, 
         '/api/bookmarks/<id>', 
         '/api/bookmarks/<id>',
-        resource_class_kwargs={'current_user': api.app.current_user}
+        resource_class_kwargs={'current_user': flask_jwt_extended.current_user}
     )

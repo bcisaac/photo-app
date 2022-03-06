@@ -1,6 +1,7 @@
+import datetime
 from dotenv import load_dotenv
 load_dotenv()
-from flask import Flask, request
+from flask import Flask, make_response, redirect, request
 from flask_restful import Api
 from flask_cors import CORS
 from flask import render_template
@@ -42,12 +43,19 @@ def api_docs():
     navigator = ApiNavigator(flask_jwt_extended.current_user)
     return render_template(
         'api/api-docs.html', 
-        user=app.current_user,  #TODO: change to flask_jwt_extended.current_user
+        user=flask_jwt_extended.current_user,
         endpoints=navigator.get_endpoints(),
         access_token=access_token,
         csrf=csrf,
         url_root=request.url_root[0:-1] # trim trailing slash
     )
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    # print('JWT data:', jwt_data)
+    # https://flask-jwt-extended.readthedocs.io/en/stable/automatic_user_loading/
+    user_id = jwt_data["sub"]
+    return User.query.filter_by(id=user_id).one_or_none()
 
 # set logged in user
 with app.app_context():
@@ -68,13 +76,14 @@ suggestions.initialize_routes(api)
 # # # Initialize routes of 2 new views
 token.initialize_routes(api)
 
-
 # Server-side template for the homepage:
 @app.route('/')
+@decorators.jwt_or_login
 def home():
     return render_template(
-        'index.html', 
-        user=app.current_user
+        'index.html',
+        user=flask_jwt_extended.current_user
+        # app.current_user
     )
 
 
