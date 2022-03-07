@@ -329,6 +329,30 @@ input {
     text-overflow: ellipsis;
 }
 
+#user-profile {
+    padding: 0em;
+    margin: 0em
+}
+
+/* #user-profile * {
+    padding: 0em;
+    margin: 0em
+} */
+
+#user-profile > div {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    margin: 0em;
+    padding: 0em;
+}
+
+#user-profile > p {
+    margin: 0em;
+    padding: .5em 0em;
+    color: #525252
+}
+
 .rec-panel h1 {
     font-size: xx-large;
     font-weight: 700;

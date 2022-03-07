@@ -1,3 +1,20 @@
+
+const getCookie = key => {
+    let name = key + "=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+};
+
 // Get post data from api endpoint (/api/posts?limit=10)
 // when that data arrives build a bunch of html cards
 // update the container with the HTML
@@ -63,28 +80,31 @@ const post2Html = post => {
 const toggleLike = (ev) => {
     console.log('button-clicked')
     const elem = ev.currentTarget
+    redrawLikes(elem.dataset.postId)
     if (elem.getAttribute('aria-checked') === 'false') {
         // issue post request
         likePost(elem.dataset.postId, elem)
-        
     } else {
         // issue delete request
         unLikePost(elem.dataset.postId, elem.dataset.userLikeId, elem)
-        
     }
     redrawLikes(elem.dataset.postId)
-
     
 }
 
 const redrawLikes = postId => {
     fetch(`/api/posts/${postId}`, {
             method: "GET",
+            headers: {
+                'X-CSRF-TOKEN': getCookie('csrf_access_token')
+            }
         })
         .then(response => response.json())
         .then(data => {
+            console.log(data)
             console.log(document.querySelector(`#likes-${data.id}`))
             document.querySelector(`#likes-${data.id}`).innerHTML = `<h2>${data.likes.length} like${data.likes.length!=1 ? 's' : ''}</h2>`
+            console.log(`${data.likes.length} like${data.likes.length!=1 ? 's' : ''}`)
         })  
 }
 
@@ -93,6 +113,7 @@ const likePost = (postId, elem) => {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCookie('csrf_access_token')
             }
         })
         .then(response => response.json())
@@ -111,6 +132,7 @@ const unLikePost = (postId, userLikeId, elem) => {
         method: "DELETE",
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCookie('csrf_access_token')
         }
     })
     .then(response => response.json())
@@ -144,6 +166,7 @@ const bookmarkPost = (postId, elem) => {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCookie('csrf_access_token')
             },
             body: JSON.stringify(postData)
         })
@@ -163,6 +186,7 @@ const unBookmarkPost = (bookmarkId, elem) => {
         method: "DELETE",
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCookie('csrf_access_token')
         }
     })
     .then(response => response.json())
@@ -191,6 +215,7 @@ const addComment = (ev) => {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCookie('csrf_access_token')
         },
         body: JSON.stringify(postData)
     })
@@ -204,8 +229,11 @@ const addComment = (ev) => {
 }
 
 const redrawComments = (postId) => {
-    fetch(`http://127.0.0.1:5000/api/posts/${postId}`, {
+    fetch(`/api/posts/${postId}`, {
         method: "GET",
+        headers: {
+            'X-CSRF-TOKEN': getCookie('csrf_access_token')
+        }
     })
     .then(response => response.json())
     .then(data => {
@@ -295,15 +323,6 @@ const showPostDetail = ev => {
     
 }
 
-const suggestionHeader = () => {
-    `
-    <header>
-        <img class="profile-pic" alt="your profile pic" src={{user.profile_url}}>
-        <h1>{{ user.username }}</h1>
-    </header>
-    `
-}
-
 const story2Html = story => {
     // return `
     //     <section>
@@ -361,6 +380,7 @@ const followUser = (userId, elem) => {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCookie('csrf_access_token')
             },
             body: JSON.stringify(postData)
         })
@@ -407,12 +427,29 @@ const displayPosts = () => {
         })
 };
 
+const suggestionHeader = () =>{
+    fetch('/api/profile/')
+    .then(response => response.json())
+    .then(user => {
+        const html = `<div id="user-profile">
+            <div>
+                <img class="profile-pic" alt="your profile pic" src="${user.thumb_url}">
+                <h1>${user.username}</h1>
+            </div>
+            <p> suggestions for you </p>
+        </div>
+        `
+        document.querySelector('.rec-panel').innerHTML = html;
+    })
+}   
+
 const displaySuggestions = () => {
+    suggestionHeader()
     fetch('/api/suggestions/')
     .then(response => response.json())
     .then(users => {
         const html = users.map(user2html).join('\n');
-        document.querySelector('.rec-panel').innerHTML = html;
+        document.querySelector('.rec-panel').innerHTML += html;
     })
 }
 
@@ -425,8 +462,6 @@ const displayStories = () => {
             document.querySelector('.stories').innerHTML = html;
         })
 };
-
-
 
 const initPage = () => {
     displayStories();
