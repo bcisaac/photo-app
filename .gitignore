@@ -1,6 +1,6 @@
 *.pyc
 .env
-react-client/node-modules
+react-client/node_modules
 react-client/build
-/node-modules
+**/node_modules
 __pycache__/
