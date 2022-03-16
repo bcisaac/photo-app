@@ -43,6 +43,19 @@ def user_id_is_valid(func):
         return _id_is_valid(self, func, 'user_id', *args, **kwargs)
     return wrapper
 
+def url_id_is_valid(func):
+    def wrapper(self, id, *args, **kwargs):
+        print(id)
+        try:
+            int(id)
+        except:
+            return Response(
+                json.dumps({'message': 'Invalid id={0}'.format(id)}), 
+                mimetype="application/json", 
+                status=400
+            )
+        return func(self, id, *args, **kwargs)
+    return wrapper
 
 def user_can_view_post(func):
     def wrapper(self, *args, **kwargs):

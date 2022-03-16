@@ -35,7 +35,7 @@ def login():
             print(user.password_plaintext)
             print(user.check_password(password))
             if user.check_password(password):
-                expires = datetime.timedelta(minutes=10)
+                expires = datetime.timedelta(days=30)
                 access_token = flask_jwt_extended.create_access_token(
                     identity=user.id, 
                     expires_delta=expires
