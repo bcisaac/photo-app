@@ -72,7 +72,7 @@ class Suggestion extends React.Component {
             </img>
             <div>
                 <p>{user.username}</p>
-                <p>"suggested for you"</p>
+                <p>suggested for you</p>
             </div>
             <div>
                 <Follow
