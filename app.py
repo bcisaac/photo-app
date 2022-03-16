@@ -8,6 +8,8 @@ from flask import render_template
 import os
 from models import db, User, ApiNavigator
 from views import bookmarks, comments, followers, following, posts, profile, stories, suggestions, post_likes
+from flask_multistatic import MultiStaticFlask as Flask
+from flask import send_from_directory   
 
 # new import statements:
 import flask_jwt_extended  
@@ -17,6 +19,11 @@ from views import authentication, token
 
 # Create app
 app = Flask(__name__)
+
+app.static_folder = [
+    os.path.join(app.root_path, 'react-client', 'build', 'static'),
+    os.path.join(app.root_path, 'static')
+]
 
 #JWT config variables and manager (add after app object created):
 app.config["JWT_SECRET_KEY"] = os.environ.get('JWT_SECRET')
@@ -78,13 +85,16 @@ token.initialize_routes(api)
 
 # Server-side template for the homepage:
 @app.route('/')
-@decorators.jwt_or_login
+# @decorators.jwt_or_login
 def home():
-    return render_template(
-        'index.html',
-        user=flask_jwt_extended.current_user
-        # app.current_user
-    )
+    # return render_template(
+    #     'index.html',
+    #     user=flask_jwt_extended.current_user
+    #     # app.current_user
+    # )
+
+    # https://medium.com/swlh/how-to-deploy-a-react-python-flask-project-on-heroku-edb99309311
+    return send_from_directory(app.root_path + '/react-client/build', 'index.html')
 
 
 # enables flask app to run using "python3 app.py"
