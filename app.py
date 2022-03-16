@@ -94,7 +94,7 @@ def home():
     # )
 
     # https://medium.com/swlh/how-to-deploy-a-react-python-flask-project-on-heroku-edb99309311
-    return send_from_directory(app.root_path + '/react-client/build', 'index.html')
+    return send_from_directory(app.root_path + '/react-client/public', 'index.html')
 
 
 # enables flask app to run using "python3 app.py"
